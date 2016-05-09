@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="/static/node_modules/bootstrap/dist/css/bootstrap.css" >
+  <link rel="stylesheet" href="/static/chartlist/plugins/chartist-plugin-tooltip.css" >
+  <link rel="stylesheet" href="/static/chartlist/chartlist.css" >
+  <script type="text/javascript" src="/static/chartlist/chartlist.js"></script>
+  <script type="text/javascript" src="/static/chartlist/plugins/chartist-plugin-tooltip.js"></script>
+  <script type="text/javascript" src="/static/chartlist/plugins/chartist-plugin-axistitle.min.js"></script>
+  <script type="text/javascript" src="/static/node_modules/jquery/dist/jquery.js"></script>
+  <title>Companies</title>
+  <style>
+  body{font:12px/18px "Helvetica Neue","Lantinghei SC","Microsoft Yahei", Helvetica,Arial,sans-serif;}
+  .tags a{color:#999; display: inline-block; padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 10px 5px; vertical-align: middle;}
+  ul li{list-style: none;}
+  </style>
+</head>
+<body data-tags="{{ tag_name }}">
+  <div class="container">
+    <h3 class="page-header text-center"><span id="tag-title">{{ tag_name }}</span> 行业投资动向</h3>
+    <div class="ct-chart" ></div>
+
+    <div class="row show-grid"  style="margin-top:50px"> 
+      <div class="col-md-3"> </div>
+      <div class="col-md-6"> 
+      <div class="input-group "> 
+        <input placeholder="输入行业进行对比，以英文逗号分隔" type="text" class="form-control" id="tag" aria-label="Text input with multiple buttons"> <div class="input-group-btn"> 
+        <button type="button" id="compare" class="btn btn-default">添加到对比</button> </div> 
+        </div>
+      </div>
+     <div class="col-md-3"> </div>
+    </div>
+
+
+    <h3 class="page-header text-center">{{ tag_name }} 行业最近获投公司</h3>
+    <div class="row show-grid clearfix">
+      <div class="col-md-6"> 
+        <ul class="tags">
+        {% for c in investments %}
+          {% if forloop.counter <= 15 %}
+          <li><span>{{ forloop.counter }}</span>. <a target="_blank" {% if c.invest_to__homepage != None %} href="{{ c.invest_to__homepage }}"{% endif %} >{{ c.invest_to__name }}</a> <span class="text-muted">{{ c.invest_date|date:'Y-m' }} by {{ c.invest_to__investment_raw }}</span></li>
+          {% endif %}
+        {% endfor %}
+        </ol>
+      </div>
+      <div class="col-md-6">
+        <ul class="tags">
+        {% for c in investments %}
+          {% if forloop.counter > 15 %}
+          <li><span>{{ forloop.counter }}</span>. <a target="_blank" {% if c.invest_to__homepage != None %} href="{{ c.invest_to__homepage }}" {% endif %}>{{ c.invest_to__name }}</a> <span class="text-muted">{{ c.invest_date|date:'Y-m' }} by {{ c.invest_to__investment_raw }}</span></li>
+          {% endif %}
+        {% endfor %}
+        </ol>
+      </div> 
+    </div>
+   
+  </div>
+  <script type="text/javascript">
+    var plugins =  [
+        Chartist.plugins.tooltip(),
+        Chartist.plugins.ctAxisTitle({
+          axisX: {
+            axisTitle: '年月',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 30
+            },
+            textAnchor: 'middle'
+          },
+          axisY: {
+            axisTitle: '融资笔数',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 0
+            },
+            textAnchor: 'middle',
+            flipTitle: false
+          }
+        })
+      ];
+    var linechart = new Chartist.Line('.ct-chart', {
+      labels: [{{ labels|safe }}],
+      series: [
+        [{{ data|safe  }}]
+      ]
+    }, {
+      fullWidth : true,
+      height : 400,
+      chartPadding : {
+        right : 40
+      },
+      plugins : plugins
+    });
+
+    $('#compare').click(function(){
+      var tags = $('#tag-title').text();
+      tags += ',' + $('#tag').val();
+      $('#tag-title').html(tags)
+
+      $.ajax({
+        url : '/api/tag',
+        data : {
+          tags : tags
+        },
+        success : function(data){
+          $('#tag').val('')
+
+          var labels =  data.labels;
+          var series = data.data;
+          console.log(labels)
+          console.log(series)
+          linechart = new Chartist.Line('.ct-chart', {
+            labels: labels,
+            series: series
+          }, {
+            fullWidth : true,
+            height : 400,
+            chartPadding : {
+              right : 40
+            },
+            plugins: [
+              Chartist.plugins.tooltip()
+            ]
+          });
+          
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="/static/node_modules/bootstrap/dist/css/bootstrap.css" >
+  <link rel="stylesheet" href="/static/chartlist/plugins/chartist-plugin-tooltip.css" >
+  <link rel="stylesheet" href="/static/chartlist/chartlist.css" >
+  <script type="text/javascript" src="/static/chartlist/chartlist.js"></script>
+  <script type="text/javascript" src="/static/chartlist/plugins/chartist-plugin-tooltip.js"></script>
+  <script type="text/javascript" src="/static/chartlist/plugins/chartist-plugin-axistitle.min.js"></script>
+  <script type="text/javascript" src="/static/node_modules/jquery/dist/jquery.js"></script>
+  <title>Companies</title>
+  <style>
+  body{font:12px/18px "Helvetica Neue","Lantinghei SC","Microsoft Yahei", Helvetica,Arial,sans-serif;}
+  .tags a{color:#999; display: inline-block; padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 10px 5px; vertical-align: middle;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3 class="page-header text-center">全行业整体投资动向</h3>
+    <div class="ct-chart" ></div>
+
+    <h3 class="page-header text-center">Top 30 新兴行业</h3>
+    <div class="row show-grid"  style="margin-top:50px"> 
+      <div class="col-md-4"> 
+        <div class="list-group">
+          {% for rank in trending_data %}
+            {% if forloop.counter <= 10 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+            </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4"> 
+        <ul class="list-group">
+          {% for rank in trending_data %}
+            {% if forloop.counter > 10 and forloop.counter <= 20 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+            </a>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-md-4"> 
+        <ul class="list-group">
+          {% for rank in trending_data %}
+            {% if forloop.counter > 20 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+            </a>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="page-header text-center">Top 30 热门行业</h3>
+    <div class="row show-grid"  style="margin-top:50px"> 
+      <div class="col-md-4"> 
+        <div class="list-group">
+          {% for rank in ranking_data %}
+            {% if forloop.counter <= 10 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+              <span title="本月热度" class="badge">{{ rank.score|floatformat:0 }}</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-4"> 
+        <ul class="list-group">
+          {% for rank in ranking_data %}
+            {% if forloop.counter > 10 and forloop.counter <= 20 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+              <span title="本月热度" class="badge">{{ rank.score|floatformat:0 }}</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-md-4"> 
+        <ul class="list-group">
+          {% for rank in ranking_data %}
+            {% if forloop.counter > 20 %}
+            <a class="list-group-item" href="/tag/{{ rank.tag }}"> 
+              <strong>{{ forloop.counter }}</strong> &nbsp;{{ rank.tag }}
+              <span title="本月热度" class="badge">{{ rank.score|floatformat:0 }}</span>
+            </a>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+
+    <h3 class="page-header text-center">所有行业列表</h3>
+    <section class="tags">
+      {% for tag in tags %}
+        <a href="/tag/{{ tag.name }}"> {{ tag.name }} · <span class="">{{ tag.num_companies }}</span></a>
+      {% endfor %}
+    </section>
+  </div>
+  {{ monthlydata }}
+   <script type="text/javascript">
+   var plugins =  [
+        Chartist.plugins.tooltip(),
+        Chartist.plugins.ctAxisTitle({
+          axisX: {
+            axisTitle: '年月',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 30
+            },
+            textAnchor: 'middle'
+          },
+          axisY: {
+            axisTitle: '融资笔数',
+            axisClass: 'ct-axis-title',
+            offset: {
+              x: 0,
+              y: 0
+            },
+            textAnchor: 'middle',
+            flipTitle: false
+          }
+        })
+      ];
+    new Chartist.Line('.ct-chart', {
+      labels: [{{ labels|safe }}],
+      series: [
+        [{{ data|safe  }}]
+      ]
+    }, {
+      fullWidth : true,
+      height : 400,
+      chartPadding : {
+        right : 40
+      },
+      plugins:plugins
+    });
+
+  </script>
+</body>
+</html>
+

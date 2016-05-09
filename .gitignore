@@ -1,0 +1,5 @@
+logs
+dbs
+/ii/thumbnails/*
+static/node_modules/*
+*.pyc

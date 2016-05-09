@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <title>Companies</title>
+  <style>
+  body{font:12px/18px "Helvetica Neue","Lantinghei SC","Microsoft Yahei", Helvetica,Arial,sans-serif;}
+  .tags a{color:#999; display: inline-block; padding: 10px; background: #f0f0f0; border-radius: 4px; margin: 10px 5px; vertical-align: middle;}
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <table class="table table-striped"> 
+      <thead> 
+        <tr> 
+          <th width="10%">公司名称</th> 
+          <th width="20%">公司名称</th> 
+          <th width="15%">公司主页</th> 
+          <th width="20%">涉及领域</th>
+          <th width="15%">联系邮箱</th> 
+          <th width="20%">获投信息</th> 
+          </tr> 
+        </thead> 
+        <tbody> 
+          {% for c in companies %}
+
+          <tr> 
+            <td>{{ forloop.counter }}</td>
+            <td scope="row">{{ c.invest_to__name }}</td>
+            <td>{% if c.invest_to__homepage %}<a href="{{ c.invest_to__homepage }}" target="_blank">公司主页 </a>{% endif %}</td>
+            <td>{{ c.invest_to__tags_raw }}</td> 
+            <td>{{ c.invest_to__email }}</td> 
+            <td>{{ c.invest_to__investment_raw }} - {{ c.invest_date|date:'Y-m-d' }}
+            </td> 
+          </tr> 
+          {% endfor %}
+          </tr> 
+        </tbody> 
+    </table>
+  </div>
+  }
+</body>
+</html>
