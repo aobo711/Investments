@@ -2,6 +2,7 @@ from celery.task import task
 from django.db.models import Q
 from dynamic_scraper.utils.task_utils import TaskUtils
 from ii.models import Company, Source
+from ii import util
 
 @task()
 def run_spiders():
@@ -12,6 +13,9 @@ def run_spiders():
     }
     #Optional as well: For more complex lookups you can pass Q objects vi args argument
     args = ()
+
+    util.fetch_token()
+
     t.run_spiders(Source, 'scraper', 'scraper_runtime', 'ii_spider', *args, **kwargs)
 
 # @task()

@@ -51,7 +51,8 @@ class DjangoWriterPipeline(object):
                 checker_rt = SchedulerRuntime(runtime_type='C')
                 checker_rt.save()
                 item['checker_runtime'] = checker_rt
-                item['started_at'] = item['started_at'].replace('.', '-') + '-01'
+                if 'started_at' in item:
+                    item['started_at'] = item['started_at'] + '-01-01'
                 item['industy'], created = Industy.objects.get_or_create(name=item['industy'])
 
                 try:
@@ -64,6 +65,8 @@ class DjangoWriterPipeline(object):
                 model.tags_raw = ''
                 model.save();
 
+
+                # TODO: 换成 jsonpath 实现
                 # save tags_soup
                 tags_soup = Soup(item['tags_raw'], 'lxml')
                 tags = []
