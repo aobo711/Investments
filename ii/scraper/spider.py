@@ -1,6 +1,7 @@
 from dynamic_scraper.spiders.django_spider import DjangoSpider
 from ii.models import Source, Company, CompanyItem
 import django
+from ii import util
 django.setup()
 
 class IISpider(DjangoSpider):
@@ -8,6 +9,8 @@ class IISpider(DjangoSpider):
     name = 'ii_spider'
 
     def __init__(self, *args, **kwargs):
+
+    	util.fetch_token()
 
         self._set_ref_object(Source, **kwargs)
         self.scraper = self.ref_object.scraper
