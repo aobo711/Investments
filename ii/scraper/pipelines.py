@@ -85,7 +85,11 @@ class DjangoWriterPipeline(object):
                 for i in investments:
 
                     invest_date = '-'.join(str(i) for i in [i['invse_year'], i['invse_month'],i['invse_month']])
-                    invest_amount = str(i['invse_detail_money']) + i['invse_currency']['invse_currency_name']
+
+                    if i['invse_detail_money'] == 0:
+                        invest_amount = i['invse_similar_money']['invse_similar_money_name'] + i['invse_currency']['invse_currency_name']
+                    else:
+                        invest_amount = str(i['invse_detail_money']) + i['invse_currency']['invse_currency_name']
 
                     if i['invse_rel_invst_name']:
                         invest_firm = i['invse_rel_invst_name']
