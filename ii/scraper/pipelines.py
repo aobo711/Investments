@@ -5,8 +5,6 @@ import logging,json,time,scrapy
 from scrapy.exceptions import DropItem
 from dynamic_scraper.models import SchedulerRuntime
 from ii.models import Company, Industy, IC, Investment, Tag
-from bs4 import BeautifulSoup as Soup
-from soupselect import select
 import ast
 
 import sys  
