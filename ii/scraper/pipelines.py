@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from django.db.utils import IntegrityError
-import time,scrapy
 from scrapy import log
-import logging
+import logging,json,time,scrapy
 from scrapy.exceptions import DropItem
 from dynamic_scraper.models import SchedulerRuntime
 from ii.models import Company, Industy, IC, Investment, Tag
 from bs4 import BeautifulSoup as Soup
 from soupselect import select
+import ast
+
 import sys  
 reload(sys)  
 sys.setdefaultencoding('utf8')  
@@ -64,37 +65,38 @@ class DjangoWriterPipeline(object):
 
                 model.tags_raw = ''
                 model.save();
-
-
-                # TODO: 换成 jsonpath 实现
-                # save tags_soup
-                tags_soup = Soup(item['tags_raw'], 'lxml')
-                tags = []
-                for tag_soup in select(tags_soup, 'a span'):
-                    tag = tag_soup.string
-                    tag_obj, tag_created = Tag.objects.get_or_create(name=tag)
+            
+                tags = ast.literal_eval(item['tags_raw'].encode('utf-8'))
+                tag_objs = []
+                for tag in tags:
+                    tag_name = tag['tag_name']
+                    tag_obj, tag_created = Tag.objects.get_or_create(name=tag_name)
                     if tag:
                         tag_obj.save()
-                        tags.append(tag_obj)
+                        tag_objs.append(tag_obj)
 
-                if tags:
-                    model.tags.add(*tags)
+                if tag_objs:
+                    model.tags.add(*tag_objs)
 
-                model.tags_raw = ','.join(t.name for t in tags)
+                model.tags_raw = ','.join(t.name for t in tag_objs)
 
 
-                #save investment
-                soup = Soup(item['investment_raw'], 'lxml')
+                # 保存融资信息
                 invest_firm = ''
-                for investment_soup in soup.find_all('tr'):
-                    invest_date = select(investment_soup, 'span.date')[0].string.replace('.', '-')
-                    invest_amount = select(investment_soup, 'span.finades a')[0].string
+                investments = ast.literal_eval(item['investment_raw'].encode('utf-8'))                
+                for i in investments:
 
-                    tds = select(investment_soup, 'td')
-                    if tds[3]:
-                        invest_firm = ','.join(i.string for i in tds[3].find_all('a'))
+                    invest_date = '-'.join(str(i) for i in [i['invse_year'], i['invse_month'],i['invse_month']])
+                    invest_amount = str(i['invse_detail_money']) + i['invse_currency']['invse_currency_name']
 
-                    invest_round = select(investment_soup, 'span.round a')[0].string
+                    if i['invse_rel_invst_name']:
+                        invest_firm = i['invse_rel_invst_name']
+                    else:
+                        invest_firm = ' '.join([org['invst_name'] for org in i['invse_orags_list']])
+
+
+
+                    invest_round = i['invse_round']['invse_round_name']
                     investment, investment_created = Investment.objects.get_or_create(invest_date = invest_date,
                         invest_firm = invest_firm,
                         invest_round = invest_round,
@@ -105,6 +107,46 @@ class DjangoWriterPipeline(object):
 
                 model.investment_raw = invest_firm
                 model.save()
+
+                # backup
+                # save tags_soup
+                # tags_soup = Soup(item['tags_raw'], 'lxml')
+                # tags = []
+                # for tag_soup in select(tags_soup, 'a span'):
+                #     tag = tag_soup.string
+                #     tag_obj, tag_created = Tag.objects.get_or_create(name=tag)
+                #     if tag:
+                #         tag_obj.save()
+                #         tags.append(tag_obj)
+
+                # if tags:
+                #     model.tags.add(*tags)
+
+                # model.tags_raw = ','.join(t.name for t in tags)
+
+
+                #save investment
+                # soup = Soup(item['investment_raw'], 'lxml')
+                # invest_firm = ''
+                # for investment_soup in soup.find_all('tr'):
+                #     invest_date = select(investment_soup, 'span.date')[0].string.replace('.', '-')
+                #     invest_amount = select(investment_soup, 'span.finades a')[0].string
+
+                #     tds = select(investment_soup, 'td')
+                #     if tds[3]:
+                #         invest_firm = ','.join(i.string for i in tds[3].find_all('a'))
+
+                #     invest_round = select(investment_soup, 'span.round a')[0].string
+                #     investment, investment_created = Investment.objects.get_or_create(invest_date = invest_date,
+                #         invest_firm = invest_firm,
+                #         invest_round = invest_round,
+                #         invest_amount = invest_amount,
+                #         invest_to = model)
+
+                #     investment.save()
+
+                # model.investment_raw = invest_firm
+                
 
                 if created:
                     spider.log('==' + model.name + '== created.', log.INFO)
