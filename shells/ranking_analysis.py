@@ -3,7 +3,7 @@
 
 # 分析每个行业月投资热度，用于分析热门行业
 
-import MySQLdb
+import sqlite3
 import math
 
 from datetime import datetime
@@ -11,13 +11,9 @@ from datetime import datetime
 def diff_month(d1, d2):
     return (d1.year - d2.year)*12 + d1.month - d2.month
 
-db = MySQLdb.connect(host='localhost',    
-                     user='root',         
-                     passwd='',  
-                     db='ii')
+conn = sqlite3.connect('/home/hzzhengjintian/works/ii.db')
 
-cur = db.cursor()
-cur.execute('select tag,yearmonth,count(investment_id) from ii_monthlydata where yearmonth>"20160301" group by tag,yearmonth order by tag,yearmonth')
+cursor = conn.execute('select tag,yearmonth,count(investment_id) from ii_monthlydata where yearmonth>"20160301" group by tag,yearmonth order by tag,yearmonth')
 
 current = {
 	'tag' : '',
@@ -25,7 +21,7 @@ current = {
 	'score' : 0
 }
 
-for row in cur.fetchall():
+for row in cursor:
 	tag = row[0]
 	yearmonth = row[1]
 	investment_num = row[2]
@@ -52,7 +48,7 @@ for row in cur.fetchall():
 	insert_if_not_exists = "INSERT INTO ii_rankingdata (`yearmonth`, `tag`, `score`) SELECT * FROM (SELECT '%s','%s', %f) AS tmp \
 		WHERE NOT EXISTS (SELECT * FROM ii_rankingdata WHERE \
 		`yearmonth`='%s' and `tag`='%s') LIMIT 1" % (current['yearmonth'], current['tag'], current['score'], current['yearmonth'], current['tag'])
-	cur.execute(insert_if_not_exists)
+	conn.execute(insert_if_not_exists)
 
-db.commit()
-db.close()
+conn.commit()
+conn.close()
