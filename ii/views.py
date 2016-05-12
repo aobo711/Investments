@@ -91,16 +91,22 @@ def home(request):
     	.filter(num_companies__gt=30)\
     	.order_by('-num_companies')
 
-    ranking_data = RankingData.objects.filter(yearmonth__gt='201602')\
+    # 看热门行业只需要看上个月的最终得分就可以，所以先算一下上个月的月份
+    today = datetime.date.today()
+    first = today.replace(day=1)
+    lastMonth = first - datetime.timedelta(days=1)
+    ranking_data = RankingData.objects.filter(yearmonth=lastMonth.strftime("%Y%m"))\
         .order_by('-score')[:30]
 
-    
+    half_year_ago = datetime.datetime.now() - datetime.timedelta(days=180)
+
     trending_data = TrendingData.objects\
         .values('tag')\
         .annotate(avg=Avg('increasment_rate'), count=Count('yearmonth'))\
-        .filter(count__gt=5)\
+        .filter(count__gt=3, yearmonth__gt=half_year_ago.strftime('%Y%m'))\
         .order_by('-avg')[:30]
 
+    print trending_data.query
 
     t = loader.get_template('home.html')
     c = Context({ 
