@@ -8,9 +8,9 @@ import sqlite3
 
 conn = sqlite3.connect('/home/hzzhengjintian/works/ii.db')
 
-cursor = conn.execute('select EXTRACT(YEAR_MONTH FROM i.invest_date),c_t.tname, \
+cursor = conn.execute('select strftime("%Y%m", i.invest_date),c_t.tname, \
 	i.id from (select c.id as cid, c.name as cname, t.name as tname from ii_company as c,ii_company_tags as ct, ii_tag as t \
-	where c.id=ct.company_id and ct.tag_id = t.id and c.updated_at >= "20160301") as c_t,ii_investment as i \
+	where c.id=ct.company_id and ct.tag_id = t.id and c.updated_at >= "20160501") as c_t,ii_investment as i \
 	where c_t.cid=i.invest_to_id')
 
 for row in cursor:
