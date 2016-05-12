@@ -12,7 +12,7 @@ def diff_month(d1, d2):
 
 conn = sqlite3.connect('/home/hzzhengjintian/works/ii.db')
 
-cursor = conn.execute('select tag,yearmonth,count(investment_id) from ii_monthlydata where yearmonth>"20160301" group by tag,yearmonth order by tag,yearmonth')
+cursor = conn.execute('select tag,yearmonth,count(investment_id) from ii_monthlydata where yearmonth<"20160501" group by tag,yearmonth order by tag,yearmonth')
 
 current = {
     'tag' : '',
